@@ -32,17 +32,10 @@ def seek(skyobject, objtype):
         if sky_cls is None:
             raise ValueError(f"Unknown sky object: {skyobject}")
         skyo = sky_cls()
-    # sky_cls = getattr(ephem, skyobject, None)
-    # skyo = ephem.star(skyobject)
-    # if not sky_cls:
-        # raise ValueError(f"Unknown sky object: {skyobject}")
-    # skyo = sky_cls()
+
     date = ephem.now()
     skyo.compute(date)
     print(skyo.ra, skyo.dec)
-
-# seek("Mars")
-
 
 def transcribe_audio(audio_file):
     model = whisper.load_model("base")
@@ -53,7 +46,6 @@ def transcribe_audio(audio_file):
     return result
 
 text = transcribe_audio("audio.mp3")
-# subprocess.run(["ollama", "run", "llama3.2", "'Antworte mit Hallo, falls du dies lesen kannst'"])
 
 messages = [
     {
@@ -68,13 +60,9 @@ messages = [
 
 response = ollama.chat(model="llama3.2", messages=messages)
 output = response["message"]["content"]
-print(output)
-# output = subprocess.run(["ollama", "run", "llama3.2", f"'Du bist ein Sternsucher und bekommst gleich einen Satz gegeben, der vom Nutzer gesprochen wurde. Du sollt aus diesem Satz das erste Himmelobjekt bestimmen, das der nutzer sehen möchte. Gebe nur den Namen des Objektes zurück und keine weiteren Zeichen, damit es als parameter verwendet werden kann. Dein Satz lautet: {text}'"], capture_output=True, text=True)
-# print(output.stdout)
 
 skyo = f"{output}"
-skyo = skyo.replace("\n", "")
-skyo = skyo.split(",")
+skyo = skyo.replace("\n", "").split(",")
 skyobj = skyo[0]
 skytyp = skyo[1]
 print(f"Skyobj: {skyobj}, Skytyp: {skytyp}")
