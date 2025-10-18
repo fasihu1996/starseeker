@@ -45,7 +45,7 @@ def transcribe_audio(audio_file):
     print(result)
     return result
 
-text = transcribe_audio("audio.mp3")
+text = transcribe_audio("output.wav")
 
 messages = [
     {
