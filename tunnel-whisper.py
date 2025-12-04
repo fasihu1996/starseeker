@@ -23,20 +23,24 @@ os.makedirs(AUDIO_DIR, exist_ok=True)
 
 def seek(skyobject, objtype):
     objtype = objtype.lower()
-    match objtype:
-        case "star" | "sun":
-            skyo =ephem.star(skyobject)
-        case "moon":
-            skyo = ephem.Moon(skyobject)
-        case "satellite":
-            skyo = ephem.EarthSatellite(skyobject)
-        case "planetmoon":
-            skyo = ephem.PlanetMoon(skyobject)
-        case _:
-            sky_cls = getattr(ephem, skyobject, None)
-            if sky_cls is None:
-                raise ValueError(f"Unknown sky object: {skyobject}")
-            skyo = sky_cls()
+    if skyobject == "Sun":
+        skyo = ephem.Sun()
+    else:
+        match objtype:
+            case "star":
+                skyo =ephem.star(skyobject)
+            case "moon":
+                skyo = ephem.Moon(skyobject)
+            case "satellite":
+                skyo = ephem.EarthSatellite(skyobject)
+            case "planetmoon":
+                skyo = ephem.PlanetMoon(skyobject)
+            case _:
+                sky_cls = getattr(ephem, skyobject, None)
+                if sky_cls is None:
+                    raise ValueError(f"Unknown sky object: {skyobject}")
+                skyo = sky_cls()
+
 
     date = ephem.now()
     skyo.compute(date)
@@ -220,6 +224,7 @@ class RecorderApp:
                         "Choose the correct type for the object you determined. Make sure that your response is in english and never a full sentence. "
                         "For example, if the input is 'Zeige mir den Stern Sirius', your response should be 'Sirius,Star'. "
                         "If the input is 'Ich möchte den Polarstern sehen', your response should be 'Polaris,Star'."
+                        "If the input is 'Bitte zeige mir die Sonne', your response should be 'Sun,Star'."
                     ),
                 },
                 {"role": "user", "content": f"Your message is: {text}"},
