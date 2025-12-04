@@ -17,18 +17,26 @@ from tkinter import ttk, messagebox
 URL_WHISPER = "http://localhost:8000/v1/audio/transcriptions"
 URL_OLLAMA = "http://localhost:18080/api/chat"
 
-AUDIO_DIR = os.path.join(os.path.dirname(__file__), "audio")
+AUDIO_DIR = os.path.join(os.path.dirname(__file__), "tmp")
 os.makedirs(AUDIO_DIR, exist_ok=True)
 
 
 def seek(skyobject, objtype):
-    if objtype == "Star":
-        skyo = ephem.star(skyobject)
-    else:
-        sky_cls = getattr(ephem, skyobject, None)
-        if sky_cls is None:
-            raise ValueError(f"Unknown sky object: {skyobject}")
-        skyo = sky_cls()
+    objtype = objtype.lower()
+    match objtype:
+        case "star" | "sun":
+            skyo =ephem.star(skyobject)
+        case "moon":
+            skyo = ephem.Moon(skyobject)
+        case "satellite":
+            skyo = ephem.EarthSatellite(skyobject)
+        case "planetmoon":
+            skyo = ephem.PlanetMoon(skyobject)
+        case _:
+            sky_cls = getattr(ephem, skyobject, None)
+            if sky_cls is None:
+                raise ValueError(f"Unknown sky object: {skyobject}")
+            skyo = sky_cls()
 
     date = ephem.now()
     skyo.compute(date)
@@ -156,7 +164,7 @@ class RecorderApp:
             self._consumer_thread = None
 
         if not self._frames:
-            print("No audio captured.")
+            print("No tmp captured.")
             self.btn_start.config(state=tk.NORMAL)
             self.btn_stop.config(state=tk.DISABLED)
             return
@@ -180,7 +188,7 @@ class RecorderApp:
 
     def process_audio(self):
         if not self.output_file or not os.path.exists(self.output_file):
-            messagebox.showwarning("No audio", "Please record audio first.")
+            messagebox.showwarning("No tmp", "Please record tmp first.")
             return
         self.btn_process.config(state=tk.DISABLED)
         threading.Thread(target=self._process_worker, daemon=True).start()
@@ -190,7 +198,7 @@ class RecorderApp:
             # Whisper transcription
             print("Transcribing via Whisper server...")
             with open(self.output_file, "rb") as f:
-                files = {"file": (os.path.basename(self.output_file), f, "audio/wav")}
+                files = {"file": (os.path.basename(self.output_file), f, "tmp/wav")}
                 data = {"model": "whisper-1"}
                 resp = requests.post(URL_WHISPER, files=files, data=data, timeout=120)
             resp.raise_for_status()
@@ -251,11 +259,22 @@ class RecorderApp:
             # Compute coordinates
             seek(skyobj, skytyp)
             print("Done.")
+
+            # delete all .wav files in tmp
+            filelist = [f for f in os.listdir(AUDIO_DIR) if f.endswith(".wav")]
+            for f in filelist:
+                os.remove(os.path.join(AUDIO_DIR, f))
+
+
         except Exception as e:
             print(f"Error: {e}")
             messagebox.showerror("Processing failed", str(e))
         finally:
             self.btn_process.config(state=tk.NORMAL)
+
+
+
+
 
 
 if __name__ == "__main__":
