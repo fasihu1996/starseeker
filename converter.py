@@ -85,26 +85,42 @@ def seek(skyobject, objtype):
     return ra, dec
 
 
-ra_str, dec_str = seek("Vega", "Star")
+def convert(right_ascension, declination):
+    target = SkyCoord(ra=right_ascension.hours*u.hour, dec=declination.degrees*u.deg, frame='icrs')
+    location = EarthLocation(lat=52.0*u.deg, lon=13.0*u.deg, height=50*u.m)
+    curr_utc = datetime.datetime.now().astimezone().astimezone(datetime.timezone.utc)
+    obstime = Time(curr_utc, scale='utc')
 
-# Create sky coordinate in ICRS (typical RA/Dec frame)
-target = SkyCoord(ra=ra_str.hours*u.hour, dec=dec_str.degrees*u.deg, frame='icrs')
+    altaz_frame = AltAz(obstime=obstime, location=location)
+    altaz = target.transform_to(altaz_frame)
 
-# Observer location
-location = EarthLocation(lat=52.0*u.deg, lon=13.0*u.deg, height=50*u.m)
+    altitude_deg, azimuth_deg = altaz.alt.degree, altaz.az.degree
+    return azimuth_deg, altitude_deg
 
-curr_time = datetime.datetime.now().astimezone()
-curr_utc = curr_time.astimezone(datetime.timezone.utc)
-# Observation time (UTC)
-obstime = Time(curr_utc, scale='utc')
 
-# AltAz frame for that time and place
-altaz_frame = AltAz(obstime=obstime, location=location)
 
-# Transform RA/Dec → Alt/Az
-altaz = target.transform_to(altaz_frame)
-
-altitude_deg = altaz.alt.degree
-azimuth_deg  = altaz.az.degree
-
-print(azimuth_deg, altitude_deg)
+ra_str, dec_str = seek("Mars", "Planet")
+az_str, alt_str = convert(ra_str, dec_str)
+print(az_str, alt_str)
+#
+# # Create sky coordinate in ICRS (typical RA/Dec frame)
+# target = SkyCoord(ra=ra_str.hours*u.hour, dec=dec_str.degrees*u.deg, frame='icrs')
+#
+# # Observer location
+# location = EarthLocation(lat=52.0*u.deg, lon=13.0*u.deg, height=50*u.m)
+#
+# curr_time = datetime.datetime.now().astimezone()
+# curr_utc = curr_time.astimezone(datetime.timezone.utc)
+# # Observation time (UTC)
+# obstime = Time(curr_utc, scale='utc')
+#
+# # AltAz frame for that time and place
+# altaz_frame = AltAz(obstime=obstime, location=location)
+#
+# # Transform RA/Dec → Alt/Az
+# altaz = target.transform_to(altaz_frame)
+#
+# altitude_deg = altaz.alt.degree
+# azimuth_deg  = altaz.az.degree
+#
+# print(azimuth_deg, altitude_deg)

@@ -1,7 +1,7 @@
 import os
 import queue
 import threading
-from datetime import datetime
+from datetime import datetime, timezone
 
 import ephem
 import numpy as np
@@ -15,6 +15,10 @@ from tkinter import ttk, messagebox
 
 from skyfield.api import load, Star
 from skyfield.data import hipparcos
+
+from astropy.coordinates import SkyCoord, EarthLocation, AltAz
+from astropy.time import Time
+from astropy import units as u
 
 # Endpoints via SSH tunnels
 URL_WHISPER = "http://localhost:8000/v1/audio/transcriptions"
@@ -39,24 +43,25 @@ def seek(skyobject, objtype):
 
     if objtype == "star":
         # Try common star names via Hipparcos
-        star_names = {
-            'polaris': 11767,
-            'sirius': 32349,
-            'vega': 91262,
-            'betelgeuse': 27989,
-            'rigel': 24436,
-            'arcturus': 69673,
-            'aldebaran': 21421,
-            'antares': 80763,
-            'spica': 65474,
-            'capella': 24608,
-        }
-        hip_id = star_names.get(skyobject.lower())
-        if hip_id is None:
-            raise ValueError(f"Unknown star: {skyobject}")
+        # star_names = {
+        #     'polaris': 11767,
+        #     'sirius': 32349,
+        #     'vega': 91262,
+        #     'betelgeuse': 27989,
+        #     'rigel': 24436,
+        #     'arcturus': 69673,
+        #     'aldebaran': 21421,
+        #     'antares': 80763,
+        #     'spica': 65474,
+        #     'capella': 24608,
+        # }
+        # hip_id = star_names.get(skyobject.lower())
+        # if hip_id is None:
+        #     raise ValueError(f"Unknown star: {skyobject}")
+        hip_id = int(skyobject)
         star_data = df.loc[hip_id]
         skyo = Star.from_dataframe(star_data)
-        astrometric = earth.at(t).observe(skyo)
+        apparent = earth.at(t).observe(skyo).apparent()
 
     elif objtype == "planet":
         # Map common names to ephemeris keys
@@ -75,11 +80,11 @@ def seek(skyobject, objtype):
         if key is None:
             raise ValueError(f"Unknown planet: {skyobject}")
         skyo = eph[key]
-        astrometric = earth.at(t).observe(skyo)
+        apparent = earth.at(t).observe(skyo).apparent()
 
     elif objtype == "moon":
         skyo = eph['moon']
-        astrometric = earth.at(t).observe(skyo)
+        apparent = earth.at(t).observe(skyo).apparent()
 
     elif objtype == "satellite":
         # Load TLE data for satellites
@@ -89,14 +94,26 @@ def seek(skyobject, objtype):
         skyo = by_name.get(skyobject.lower())
         if skyo is None:
             raise ValueError(f"Unknown satellite: {skyobject}")
-        astrometric = (skyo - earth).at(t)
+        apparent = (skyo - earth).at(t).apparent()
 
     else:
         raise ValueError(f"Unknown object type: {objtype}")
 
-    ra, dec, distance = astrometric.radec()
+    ra, dec, distance = apparent.radec()
     print(f"RA: {ra}, Dec: {dec}")
     return ra, dec
+
+def convert(right_ascension, declination):
+    target = SkyCoord(ra=right_ascension.hours*u.hour, dec=declination.degrees*u.deg, frame='icrs')
+    location = EarthLocation(lat=52.0*u.deg, lon=13.0*u.deg, height=50*u.m)
+    curr_utc = datetime.now().astimezone().astimezone(timezone.utc)
+    obstime = Time(curr_utc, scale='utc')
+
+    altaz_frame = AltAz(obstime=obstime, location=location)
+    altaz = target.transform_to(altaz_frame)
+
+    altitude_deg, azimuth_deg = altaz.alt.degree, altaz.az.degree
+    return azimuth_deg, altitude_deg
 
 
 class Logger:
@@ -274,8 +291,9 @@ class RecorderApp:
                         "You will return a response in the format 'Object,Type'. The Input will include a astronomical object that someone wants to see. "
                         "Return the english common name of the object for the first parameter 'Object'. For the parameter 'Type' the options are: 'Star', 'Planet', 'Moon' or 'Satellite'. "
                         "Choose the correct type for the object you determined. Make sure that your response is in english and never a full sentence. "
-                        "For example, if the input is 'Zeige mir den Stern Sirius', your response should be 'Sirius,Star'. "
-                        "If the input is 'Ich möchte den Polarstern sehen', your response should be 'Polaris,Star'."
+                        "If the object is a star other than our sun, return the Hipparcos Identifier for the object."
+                        "For example, if the input is 'Zeige mir den Stern Sirius', your response should be '32349,Star'. "
+                        "If the input is 'Ich möchte den Polarstern sehen', your response should be '11767,Star'."
                         "If the input is 'Bitte zeige mir die Sonne', your response should be 'Sun,Star'."
                     ),
                 },
@@ -314,7 +332,9 @@ class RecorderApp:
             print(f"Skyobj: {skyobj}, Skytyp: {skytyp}")
 
             # Compute coordinates
-            seek(skyobj, skytyp)
+            ra_str, dec_str = seek(skyobj, skytyp)
+            altitude, azimuth = convert(ra_str, dec_str)
+            print(f"Altitude: {altitude}    Azimuth: {azimuth}")
             print("Done.")
 
             # delete all .wav files in tmp
