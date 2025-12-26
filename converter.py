@@ -14,6 +14,8 @@ ts = load.timescale()
 with load.open(hipparcos.URL) as f:
     df = hipparcos.load_dataframe(f)
 
+uni = EarthLocation(lat=52.41095680655865*u.deg, lon=12.53826803317537*u.deg, height=40*u.m)
+
 def seek(skyobject, objtype):
     objtype = objtype.lower()
     earth = eph['earth']
@@ -85,13 +87,12 @@ def seek(skyobject, objtype):
     return ra, dec
 
 
-def convert(right_ascension, declination):
+def convert(right_ascension, declination, loc = uni):
     target = SkyCoord(ra=right_ascension.hours*u.hour, dec=declination.degrees*u.deg, frame='icrs')
-    location = EarthLocation(lat=52.0*u.deg, lon=13.0*u.deg, height=50*u.m)
     curr_utc = datetime.datetime.now().astimezone().astimezone(datetime.timezone.utc)
     obstime = Time(curr_utc, scale='utc')
 
-    altaz_frame = AltAz(obstime=obstime, location=location)
+    altaz_frame = AltAz(obstime=obstime, location=loc)
     altaz = target.transform_to(altaz_frame)
 
     altitude_deg, azimuth_deg = altaz.alt.degree, altaz.az.degree
@@ -99,28 +100,6 @@ def convert(right_ascension, declination):
 
 
 
-ra_str, dec_str = seek("Mars", "Planet")
-az_str, alt_str = convert(ra_str, dec_str)
+ra_str, dec_str = seek("Venus", "Planet")
+az_str, alt_str = convert(ra_str, dec_str, EarthLocation(lat=53.4793*u.deg, lon=9.7023*u.deg, height=50*u.m))
 print(az_str, alt_str)
-#
-# # Create sky coordinate in ICRS (typical RA/Dec frame)
-# target = SkyCoord(ra=ra_str.hours*u.hour, dec=dec_str.degrees*u.deg, frame='icrs')
-#
-# # Observer location
-# location = EarthLocation(lat=52.0*u.deg, lon=13.0*u.deg, height=50*u.m)
-#
-# curr_time = datetime.datetime.now().astimezone()
-# curr_utc = curr_time.astimezone(datetime.timezone.utc)
-# # Observation time (UTC)
-# obstime = Time(curr_utc, scale='utc')
-#
-# # AltAz frame for that time and place
-# altaz_frame = AltAz(obstime=obstime, location=location)
-#
-# # Transform RA/Dec → Alt/Az
-# altaz = target.transform_to(altaz_frame)
-#
-# altitude_deg = altaz.alt.degree
-# azimuth_deg  = altaz.az.degree
-#
-# print(azimuth_deg, altitude_deg)
