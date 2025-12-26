@@ -7,6 +7,8 @@ from astropy.coordinates import SkyCoord, EarthLocation, AltAz
 from astropy.time import Time
 from astropy import units as u
 
+import requests
+
 # Load ephemeris and timescale once
 eph = load("de421.bsp")
 ts = load.timescale()
@@ -25,13 +27,13 @@ def seek(skyobject: str, objtype: str):
     earth = eph["earth"]
     t = ts.now()
 
-    if objtype == "star":
+    if objtype == "star" and skyobject.lower() != "sun":
         hip_id = int(skyobject)
         star_data = df.loc[hip_id]
         skyo = Star.from_dataframe(star_data)
         apparent = earth.at(t).observe(skyo).apparent()
 
-    elif objtype == "planet":
+    elif objtype == "planet" or skyobject.lower() == "sun":
         planet_map = {
             "mercury": "mercury",
             "venus": "venus",
@@ -96,6 +98,20 @@ def convert(right_ascension, declination,
     altaz_frame = AltAz(obstime=obstime, location=location)
     altaz = target.transform_to(altaz_frame)
 
-    altitude_deg = altaz.alt.degree
     azimuth_deg = altaz.az.degree
+    altitude_deg = altaz.alt.degree
+
+    if 90 < azimuth_deg < 270:
+        azimuth_deg = azimuth_deg - 180
+        altitude_deg = 180 - altitude_deg
+
+    if 270 < azimuth_deg <= 360:
+        azimuth_deg = azimuth_deg - 360
+
     return azimuth_deg, altitude_deg
+
+def transmit(raw_url: str, altitude: float, azimuth: float):
+    transmit_url = raw_url + f"/alt={altitude}&az={azimuth}"
+    res = requests.get(transmit_url)
+    return res.status_code
+

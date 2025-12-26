@@ -3,12 +3,16 @@ import threading
 import tkinter as tk
 from tkinter import ttk, messagebox
 
-from astro import seek, convert
+from pandas.core.computation.align import align_terms
+
+from astro import seek, convert, transmit
 from recorder import AudioRecorder
 from client import Client
+from tts import say
 
 
 AUDIO_DIR = os.path.join(os.path.dirname(__file__), "tmp")
+TRANSMIT_URL = "http://192.168.0.153/"
 
 
 class Logger:
@@ -121,6 +125,13 @@ class RecorderApp:
             ra, dec = seek(skyobj, skytyp)
             azimuth, altitude = convert(ra, dec)
             print(f"Altitude: {altitude}    Azimuth: {azimuth}")
+            if altitude < 0:
+                print("Object is below the horizon")
+                say(f"The {skyobj} is currently below the horizon, try again some other time.")
+            else:
+                say(f"Now seeking {skyobj}")
+                transmit(TRANSMIT_URL, altitude, azimuth)
+                print(f"Information transmitted to {TRANSMIT_URL}")
             print("Done.")
 
             # clean up wav files
