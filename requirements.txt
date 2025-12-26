@@ -24,12 +24,15 @@ narwhals==2.14.0
 networkx==3.5
 numba==0.62.1
 numpy==2.3.4
+numpy-typing-compat==20250818.2.3
 openai-whisper==20250625
+optype==0.14.0
 packaging==25.0
 pandas==2.3.3
 pillow==12.0.0
 pycparser==2.23
 pyerfa==2.0.1.5
+pygame==2.6.1
 pyparsing==3.2.5
 pypiwin32==223
 python-dateutil==2.9.0.post0
@@ -53,3 +56,4 @@ tqdm==4.67.1
 typing_extensions==4.15.0
 tzdata==2025.2
 urllib3==2.5.0
+yapper-tts==0.7.1
