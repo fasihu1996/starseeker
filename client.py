@@ -41,7 +41,7 @@ class Client:
             "You will return a response in the format 'Object,Type'. The Input will include a astronomical object that someone wants to see. "
             "Return the english common name of the object for the first parameter 'Object'. For the parameter 'Type' the options are: 'Star', 'Planet', 'Moon' or 'Satellite'. "
             "Choose the correct type for the object you determined. Make sure that your response is in english and never a full sentence. "
-            "If the object is a star other than our sun, return the Hipparcos Identifier for the object. Make sure you look this up in a current database and it is correct."
+            "If the object is a star other than our sun, return the Hipparcos Identifier for the object. Make sure you look this up in a current database such as Vizier and it is correct."
             "For example, if the input is 'Zeige mir den Stern Sirius', your response should be '32349,Star'. "
             "If the input is 'Ich möchte den Polarstern sehen', your response should be '11767,Star'."
             "If the input is 'Bitte zeige mir die Sonne', your response should be 'Sun,Star'."
