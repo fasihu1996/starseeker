@@ -1,6 +1,6 @@
 from yapper import Yapper
 yapper = Yapper()
 
-
-def say(input: str):
-    yapper.yap(input)
+def say(text: str):
+    """Basic wrapper function to output TTS messages."""
+    yapper.yap(text)

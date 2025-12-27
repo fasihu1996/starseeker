@@ -6,7 +6,8 @@ OLLAMA_PORT = 18080
 
 class Client:
     """
-    Handles communication with Whisper for transcription and Ollama for parsing.
+    Handles communication with Whisper for transcription and Ollama for parsing. Requires the setup
+    of SSH tunnels as described in the README. Contains the Ollama system prompt.
     """
 
     def __init__(self,
@@ -16,6 +17,7 @@ class Client:
         self.url_ollama = url_ollama
 
     def transcribe(self, wav_path: str) -> str:
+        """Use Whisper to transcribe input audio into text string."""
         if not os.path.exists(wav_path):
             raise FileNotFoundError(wav_path)
 
@@ -35,7 +37,7 @@ class Client:
 
     def query_object(self, text: str) -> tuple[str, str]:
         """
-        Ask Ollama to convert 'text' into 'Object,Type'.
+        Ask Ollama to interpret the TTS 'text' and convert it into 'Object,Type'.
         Returns (object, type).
         """
         system_prompt = (
@@ -74,9 +76,11 @@ class Client:
             raise ValueError("Could not parse Ollama output. Expected 'Object,Type'.")
 
         skyo = parsed.replace("\n", "").split(",")
+        # error handling in case Ollama returns an incomplete response
         if len(skyo) < 2:
             raise ValueError("Incomplete Ollama output.")
 
+        # split response into the two important parts and return those
         skyobj = skyo[0].strip()
         skytyp = skyo[1].strip()
         print(f"Skyobj: {skyobj}, Skytyp: {skytyp}")

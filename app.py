@@ -2,20 +2,23 @@ import os
 import threading
 import tkinter as tk
 from tkinter import ttk, messagebox
+import sys
 
-from pandas.core.computation.align import align_terms
-
+# Custom imports from other application parts
 from astro import seek, convert, transmit
 from recorder import AudioRecorder
 from client import Client
 from tts import say
 
-
+# directory for saving the temporary recording files. directory is emptied when application is closed
 AUDIO_DIR = os.path.join(os.path.dirname(__file__), "tmp")
+
+# transmission URL for the arduino webserver
 TRANSMIT_URL = "http://192.168.0.153/"
 
 
 class Logger:
+    """Class for logging output of commands and function calls."""
     def __init__(self, text_widget: tk.Text):
         self.text_widget = text_widget
         self._lock = threading.Lock()
@@ -35,6 +38,7 @@ class Logger:
 
 
 class RecorderApp:
+    """Class for core functionaly and UI of the application."""
     def __init__(self, root: tk.Tk):
         self.root = root
         root.title("StarSeeker Recorder")
@@ -71,26 +75,25 @@ class RecorderApp:
         self.frame.columnconfigure(0, weight=1)
         self.logger = Logger(self.log)
 
-        # redirect stdout to log window
-        import sys
         self._orig_stdout = sys.stdout
         sys.stdout = self
 
-    # stdout redirection
     def write(self, msg: str):
+        """Function to write a message into the logging section."""
         self.logger.write(msg)
         try:
             self._orig_stdout.write(msg)
-        except Exception:
+        except (OSError, AttributeError, ValueError):
             pass
 
     def flush(self):
+        """Function to flush the logging section."""
         try:
             self._orig_stdout.flush()
-        except Exception:
+        except (OSError, AttributeError, ValueError):
             pass
 
-    # UI callbacks
+    # Button functionality
 
     def start_recording(self):
         self.recorder.start()

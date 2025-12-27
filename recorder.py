@@ -7,11 +7,11 @@ import numpy as np
 import sounddevice as sd
 from scipy.io.wavfile import write as wav_write
 
-
 class AudioRecorder:
     """
     Simple audio recorder using sounddevice.
     Produces a WAV file path when recording stops.
+    Audio file is stored in the tmp folder
     """
 
     def __init__(self, audio_dir: str, fs: int = 44100, channels: int = 1):
@@ -29,7 +29,6 @@ class AudioRecorder:
         self.output_file: str | None = None
 
     # internal
-
     def _audio_callback(self, indata, frames, time, status):
         if status:
             print(f"Audio status: {status}")
@@ -45,7 +44,6 @@ class AudioRecorder:
                 continue
 
     # public API
-
     def start(self):
         if self._recording:
             return
