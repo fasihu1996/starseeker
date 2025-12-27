@@ -130,8 +130,11 @@ class RecorderApp:
                 say(f"The {skyobj} is currently below the horizon, try again some other time.")
             else:
                 say(f"Now seeking {skyobj}")
-                transmit(TRANSMIT_URL, altitude, azimuth)
-                print(f"Information transmitted to {TRANSMIT_URL}")
+                res_status = transmit(TRANSMIT_URL, altitude, azimuth)
+                if res_status == 200:
+                    print(f"Information transmitted to {TRANSMIT_URL}")
+                else:
+                    print("Transmission failed!")
             print("Done.")
 
             # clean up wav files
