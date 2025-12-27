@@ -1,6 +1,8 @@
 import os
 import requests
 
+WHISPER_PORT = 8000
+OLLAMA_PORT = 18080
 
 class Client:
     """
@@ -8,8 +10,8 @@ class Client:
     """
 
     def __init__(self,
-                 url_whisper: str = "http://localhost:8000/v1/audio/transcriptions",
-                 url_ollama: str = "http://localhost:18080/api/chat"):
+                 url_whisper: str = f"http://localhost:{WHISPER_PORT}/v1/audio/transcriptions",
+                 url_ollama: str = f"http://localhost:{OLLAMA_PORT}/api/chat"):
         self.url_whisper = url_whisper
         self.url_ollama = url_ollama
 
