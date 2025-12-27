@@ -3,6 +3,7 @@
 tmp/
 hip_main.dat
 hip_main.dat.download
+*.bsp
 __pycache__/
 arduino_secrets.h
 
