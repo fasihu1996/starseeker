@@ -1,5 +1,11 @@
 .idea/*
 .venv/*
+tmp/
+hip_main.dat
+hip_main.dat.download
+*.bsp
+__pycache__/
+arduino_secrets.h
 
 # Created by https://www.toptal.com/developers/gitignore/api/pycharm
 # Edit at https://www.toptal.com/developers/gitignore?templates=pycharm
