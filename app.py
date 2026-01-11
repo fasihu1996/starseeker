@@ -126,8 +126,9 @@ class RecorderApp:
             skyobj, skytyp = self.client.query_object(text)
 
             ra, dec = seek(skyobj, skytyp)
-            azimuth, altitude = convert(ra, dec)
+            azimuth, altitude, con_azi, con_alt = convert(ra, dec)
             print(f"Altitude: {altitude}    Azimuth: {azimuth}")
+            print(f"Converted altitude: {con_alt}    Converted azimuth: {con_azi}")
             if altitude < 0:
                 print("Object is below the horizon")
                 say(f"The {skyobj} is currently below the horizon, try again some other time.")
