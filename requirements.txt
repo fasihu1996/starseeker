@@ -23,8 +23,7 @@ mpmath==1.3.0
 narwhals==2.14.0
 networkx==3.6.1
 numba==0.63.1
-numpy==2.4.0
-numpy-typing-compat==20251206.2.4
+numpy>=2.3.0
 openai-whisper==20250625
 optype==0.15.0
 packaging==25.0

@@ -11,8 +11,9 @@ WiFiServer server(80);
 // Servos
 Servo altServo;
 Servo aziServo;
-const int ALT_PIN = 9;
-const int AZI_PIN = 10;
+const int ALT_PIN = 3;
+const int AZI_PIN = 4;
+const int LASER_PIN = 6;
 
 // optional: limit angles
 const int ALT_MIN_ANGLE = 0;
@@ -23,6 +24,8 @@ const int AZI_MAX_ANGLE = 90;
 void setup() {
   Serial.begin(9600);
   while (!Serial) { ; }
+  pinMode(LASER_PIN, OUTPUT);
+  digitalWrite(LASER_PIN, LOW);
 
   // Attach servos
   altServo.attach(ALT_PIN);
@@ -164,6 +167,7 @@ void handleRequest(const String& request) {
     Serial.print("Setting AZI servo to ");
     Serial.println(aziAngle);
     aziServo.write(aziAngle);
+    digitalWrite(LASER_PIN, HIGH);
   }
 }
 

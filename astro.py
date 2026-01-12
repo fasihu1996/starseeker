@@ -123,7 +123,7 @@ def convert(right_ascension, declination,
     if 270 < azimuth_deg <= 360:
         azimuth_deg = azimuth_deg - 360
 
-    return azimuth_deg, altitude_deg
+    return altaz.az.degree, altaz.alt.degree, azimuth_deg, altitude_deg
 
 def transmit(raw_url: str, altitude: float, azimuth: float):
     """Function to transmit the calculated values as altitude and azimuth
