@@ -115,15 +115,24 @@ def convert(right_ascension, declination,
     azimuth_deg = altaz.az.degree
     altitude_deg = altaz.alt.degree
 
-    # Additional conversion for Arduino servo motor setup
-    if 90 < azimuth_deg < 270:
-        azimuth_deg = azimuth_deg - 180
+    # if in green area
+    if 280 < azimuth_deg or azimuth_deg < 80:
+        if 280 < azimuth_deg < 360:
+            azimuth_deg -= 270
+        if 0 < azimuth_deg < 80:
+            azimuth_deg += 90
+
+    # if in red area
+    if 81 < azimuth_deg < 279:
+        if 81 < azimuth_deg < 180:
+            azimuth_deg += 180
+        if 181 < azimuth_deg < 279:
+            azimuth_deg -= 180
+
+    # adjust altitude because of shift into green area
         altitude_deg = 180 - altitude_deg
 
-    if 270 < azimuth_deg <= 360:
-        azimuth_deg = azimuth_deg - 360
-
-    return altaz.az.degree, altaz.alt.degree, azimuth_deg, altitude_deg
+    return azimuth_deg, altitude_deg
 
 def transmit(raw_url: str, altitude: float, azimuth: float):
     """Function to transmit the calculated values as altitude and azimuth

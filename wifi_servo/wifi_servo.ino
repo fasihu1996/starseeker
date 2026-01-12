@@ -16,10 +16,10 @@ const int AZI_PIN = 4;
 const int LASER_PIN = 6;
 
 // optional: limit angles
-const int ALT_MIN_ANGLE = 0;
-const int ALT_MAX_ANGLE = 180;
-const int AZI_MIN_ANGLE = -90;
-const int AZI_MAX_ANGLE = 90;
+const int ALT_MIN_ANGLE = 5;
+const int ALT_MAX_ANGLE = 175;
+const int AZI_MIN_ANGLE = -85;
+const int AZI_MAX_ANGLE = 85;
 
 void setup() {
   Serial.begin(9600);
@@ -30,8 +30,8 @@ void setup() {
   // Attach servos
   altServo.attach(ALT_PIN);
   aziServo.attach(AZI_PIN);
-  altServo.write(0);
-  aziServo.write(0);
+  altServo.write(10);
+  aziServo.write(90);
 
   if (WiFi.status() == WL_NO_MODULE) {
     Serial.println("Communication with WiFi module failed!");
