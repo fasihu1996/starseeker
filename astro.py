@@ -115,24 +115,24 @@ def convert(right_ascension, declination,
     azimuth_deg = altaz.az.degree
     altitude_deg = altaz.alt.degree
 
+    con_az = azimuth_deg
+    con_alt = altitude_deg
+
     # if in green area
-    if 280 < azimuth_deg or azimuth_deg < 80:
-        if 280 < azimuth_deg < 360:
-            azimuth_deg -= 270
-        if 0 < azimuth_deg < 80:
-            azimuth_deg += 90
+    if 270 < azimuth_deg or azimuth_deg < 90:
+        inter = 450 - azimuth_deg
+        con_az = inter % 360
 
     # if in red area
-    if 81 < azimuth_deg < 279:
-        if 81 < azimuth_deg < 180:
-            azimuth_deg += 180
-        if 181 < azimuth_deg < 279:
-            azimuth_deg -= 180
+    if 91 < azimuth_deg < 269:
+        con_az = azimuth_deg + 180
+        inter = 450 - con_az
+        con_az = inter % 360
 
     # adjust altitude because of shift into green area
         altitude_deg = 180 - altitude_deg
 
-    return azimuth_deg, altitude_deg
+    return azimuth_deg, altitude_deg, con_az, con_alt
 
 def transmit(raw_url: str, altitude: float, azimuth: float):
     """Function to transmit the calculated values as altitude and azimuth

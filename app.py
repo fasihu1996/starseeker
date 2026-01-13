@@ -14,7 +14,7 @@ from tts import say
 AUDIO_DIR = os.path.join(os.path.dirname(__file__), "tmp")
 
 # transmission URL for the arduino webserver
-TRANSMIT_URL = "http://192.168.0.153/"
+TRANSMIT_URL = "http://192.168.48.149/"
 
 
 class Logger:
@@ -126,20 +126,21 @@ class RecorderApp:
             skyobj, skytyp = self.client.query_object(text)
 
             ra, dec = seek(skyobj, skytyp)
-            azimuth, altitude = convert(ra, dec)
+            azimuth, altitude, con_az, con_alt = convert(ra, dec)
             print(f"Altitude: {altitude}    Azimuth: {azimuth}")
-            # print(f"Converted altitude: {con_alt}    Converted azimuth: {con_azi}")
+            print(f"Converted altitude: {con_alt}    Converted azimuth: {con_az}")
             if altitude < 0:
                 print("Object is below the horizon")
-                say(f"The {skyobj} is currently below the horizon, try again some other time.")
+                say(f"Das {skyobj} ist aktuell unter dem Horizont, versuch es nachher nochmal.")
             else:
-                say(f"Now seeking {skyobj}")
-                res_status = transmit(TRANSMIT_URL, altitude, azimuth)
+                say(f"Ich zeige dir jetzt {skyobj}")
+                res_status = transmit(TRANSMIT_URL, con_alt, con_az)
                 if res_status == 200:
                     print(f"Information transmitted to {TRANSMIT_URL}")
                 else:
                     print("Transmission failed!")
             print("Done.")
+            say("Tadaa.")
 
             # clean up wav files
             for f in os.listdir(AUDIO_DIR):

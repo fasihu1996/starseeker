@@ -8,18 +8,12 @@ char pass[] = SECRET_PASS;
 int status = WL_IDLE_STATUS;
 WiFiServer server(80);
 
-// Servos
+// Servos and laser
 Servo altServo;
 Servo aziServo;
 const int ALT_PIN = 3;
 const int AZI_PIN = 4;
 const int LASER_PIN = 6;
-
-// optional: limit angles
-const int ALT_MIN_ANGLE = 5;
-const int ALT_MAX_ANGLE = 175;
-const int AZI_MIN_ANGLE = -85;
-const int AZI_MAX_ANGLE = 85;
 
 void setup() {
   Serial.begin(9600);
@@ -67,16 +61,13 @@ void loop() {
       delayMicroseconds(10);
       if (client.available()) {
         char c = client.read();
-        request += c;      // collect the full HTTP request header
+        request += c;
         Serial.write(c);
 
         if (c == '\n') {
-          // End of headers (blank line)
           if (currentLine.length() == 0) {
-            // Parse rotation from request line (first line)
             handleRequest(request);
 
-            // Simple HTTP response
             client.println("HTTP/1.1 200 OK");
             client.println("Content-Type: text/plain");
             client.println("Connection: close");
@@ -105,14 +96,13 @@ void handleRequest(const String& request) {
   Serial.print("First line: ");
   Serial.println(firstLine);
 
-  // Find the path part after "GET "
+  // Split the string
   int getPos = firstLine.indexOf("GET ");
   if (getPos < 0) return;
-  int pathStart = getPos + 4;  // after "GET "
+  int pathStart = getPos + 4;
   int pathEnd = firstLine.indexOf(' ', pathStart);
   if (pathEnd < 0) return;
   String path = firstLine.substring(pathStart, pathEnd);
-  // path should look like "/?alt=30&azi=120" or "/alt=30&azi=120"
   Serial.print("Path: ");
   Serial.println(path);
 
@@ -154,19 +144,17 @@ void handleRequest(const String& request) {
   Serial.print("  az: ");
   Serial.println(azVal);
 
-  // If values valid, move servos (you can clamp or map as needed)
   if (!isnan(altVal)) {
-    int altAngle = constrain((int)altVal, ALT_MIN_ANGLE, ALT_MAX_ANGLE);
+    int altAngle = (int)altVal;
     Serial.print("Setting ALT servo to ");
     Serial.println(altAngle);
     altServo.write(altAngle);
   }
 
   if (!isnan(azVal)) {
-    int aziAngle = constrain((int)azVal, AZI_MIN_ANGLE, AZI_MAX_ANGLE);
     Serial.print("Setting AZI servo to ");
-    Serial.println(aziAngle);
-    aziServo.write(aziAngle);
+    Serial.println(azVal);
+    aziServo.write(azVal);
     digitalWrite(LASER_PIN, HIGH);
   }
 }
